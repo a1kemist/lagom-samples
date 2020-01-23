@@ -28,6 +28,9 @@ lazy val `hello-impl` = (project in file("hello-impl"))
       h2,
       macwire,
       scalaTest
+    ),
+    lagomDevSettings := Seq(
+      "config.resource" -> "dev.conf"
     )
   )
   .settings(lagomForkedTestSettings: _*)

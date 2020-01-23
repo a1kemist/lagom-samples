@@ -5,24 +5,28 @@ import akka.NotUsed
 import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 import akka.cluster.sharding.typed.scaladsl.EntityRef
 import akka.util.Timeout
-import com.lightbend.lagom.samples.hello.api.{ Greeting, HelloService }
-import com.lightbend.lagom.samples.hello.impl.readside.{ GreetingsRepository, ReadSideGreeting }
+import com.lightbend.lagom.samples.hello.api.{Greeting, HelloService}
+import com.lightbend.lagom.samples.hello.impl.readside.{GreetingsRepository, ReadSideGreeting}
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.transport.BadRequest
 import com.lightbend.lagom.scaladsl.persistence.PersistentEntityRegistry
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import com.lightbend.lagom.samples.hello.api
+import com.typesafe.config.Config
 
 
 class HelloServiceImpl(
   greetingsRepository: GreetingsRepository,
   clusterSharding: ClusterSharding,
-  persistentEntityRegistry: PersistentEntityRegistry
+  persistentEntityRegistry: PersistentEntityRegistry,
+  configuration: Config
 )(implicit ec: ExecutionContext)
     extends HelloService {
 
+  val mixedValue: String = configuration.getString("mixed.value")
+  
   /**
     * Looks up the entity for the given ID.
     */
@@ -62,6 +66,11 @@ class HelloServiceImpl(
       greetingsRepository
         .getAll()
         .map(_.map(toApi).toSeq)
+    }
+
+  override def config(): ServiceCall[NotUsed, String] =
+    ServiceCall { _ =>
+      Future.successful(mixedValue)
     }
 
   private def toApi: ReadSideGreeting => api.Greeting = { readSideModel =>
