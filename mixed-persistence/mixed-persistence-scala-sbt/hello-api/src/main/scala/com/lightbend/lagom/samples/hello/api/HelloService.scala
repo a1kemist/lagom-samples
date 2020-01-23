@@ -11,6 +11,8 @@ trait HelloService extends Service {
   def useGreeting(id: String): ServiceCall[GreetingMessage, Done]
 
   def allGreetings(): ServiceCall[NotUsed, Seq[Greeting]]
+  
+  def config(): ServiceCall[NotUsed, String]
 
   override final def descriptor = {
     import Service._
@@ -18,7 +20,8 @@ trait HelloService extends Service {
       .withCalls(
         pathCall("/api/hello/:id", hello _),
         pathCall("/api/hello/:id", useGreeting _),
-        pathCall("/api/greetings", allGreetings)
+        pathCall("/api/greetings", allGreetings),
+        pathCall("/api/config", config)
       )
       .withAutoAcl(true)
   }
